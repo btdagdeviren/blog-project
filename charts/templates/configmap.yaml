@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.backend.env.configMap.name }}
+  labels:
+    app: {{ .Values.backend.name }}
+data:
+  {{ .Values.backend.env.configMap.DB_HOST_KEY }}: {{ .Values.backend.env.configMap.DB_HOST_VALUE }}
+  {{ .Values.backend.env.configMap.DB_NAME_KEY }}: {{ .Values.backend.env.configMap.DB_NAME_VALUE }}

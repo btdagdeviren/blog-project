@@ -1,0 +1,80 @@
+backend:
+  name: flask-api
+  service:
+    name: flask-service
+    type: NodePort
+    port: 80
+    targetPort: 80
+    nodePort: 31853
+  deployment:
+    replicaCount: 1
+    image:
+      repository: btdagdeviren/flask-api
+      tag: latest
+    containerPort: 80
+    readinessProbe:
+      path: /api
+      port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    livenessProbe:
+      path: /api
+      port: 80
+      initialDelaySeconds: 15
+      periodSeconds: 20
+  env:
+    POSTGRES_DB: blogdb
+    configMap:
+      name: flask-config
+      DB_HOST_KEY: DB_HOST
+      DB_NAME_KEY: DB_NAME
+      DB_HOST_VALUE: postgres-service
+      DB_NAME_VALUE: blogdb
+
+    secret:
+      name: postgres-secret
+      DB_USER_KEY: POSTGRES_USER
+      DB_PASSWORD_KEY: POSTGRES_PASSWORD
+
+postgres:
+  name: postgres
+  deployment:
+    replicaCount: 1
+    image:
+      repository: postgres
+      tag: "15"
+    containerPort: 5432
+    dbName: blogdb
+    secret:
+      name: postgres-secret
+      userKey: POSTGRES_USER
+      passwordKey: POSTGRES_PASSWORD
+      userBase64: cG9zdGdyZXM=           # "postgres"
+      passwordBase64: cGFzc3dvcmQ=       # "password"
+    pvc:
+      enabled: true
+      claimName: postgres-pvc
+      mountPath: /var/lib/postgresql/data    
+
+  service:
+    name: postgres-service
+    type: ClusterIP
+    port: 5432
+    targetPort: 5432
+
+
+
+frontend:
+  name: frontend
+  deployment:
+    replicaCount: 1
+    image:
+      repository: btdagdeviren/blog-frontend
+      tag: latest
+    containerPort: 80
+  service:
+    type: NodePort
+    port: 80
+    targetPort: 80
+    # nodePort belirtmediğin için bırakmadım ama istersen eklenebilir
+
