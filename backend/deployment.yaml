@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-api
+  namespace: blog-project
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask-api
+  template:
+    metadata:
+      labels:
+        app: flask-api
+    spec:
+      containers:
+        - name: flask-api
+          image: btdagdeviren/flask-api:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: POSTGRES_DB
+              value: blogdb
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: flask-config
+                  key: DB_HOST
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: flask-config
+                  key: DB_NAME
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+          readinessProbe:
+            httpGet:
+              path: /api
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 20

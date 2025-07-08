@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>My Blog Posts</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    .post {
+      background: white;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    form {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 5px;
+      margin-bottom: 2rem;
+    }
+    input, textarea {
+      width: 100%;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>My Blog Posts</h1>
+
+  <!-- ✅ Yeni Kullanıcı Kaydı -->
+  <form id="registerForm">
+    <h3>Kayıt Ol</h3>
+    <input type="text" id="regUsername" placeholder="Kullanıcı Adı" required />
+    <input type="password" id="regPassword" placeholder="Şifre" required />
+    <button type="submit">Kayıt Ol</button>
+  </form>
+
+  <!-- Post Ekleme Formu -->
+  <form id="postForm">
+    <h3>Yeni Post Ekle</h3>
+    <input type="text" id="title" placeholder="Başlık" required />
+    <textarea id="content" placeholder="İçerik" required></textarea>
+    <button type="submit">Gönder</button>
+  </form>
+
+  <!-- Blog Postlar -->
+  <div id="posts"></div>
+
+  <!-- Kayıtlı Kullanıcılar -->
+  <div id="userList">
+    <h3>Kayıtlı Kullanıcılar</h3>
+    <ul id="users"></ul>
+  </div>
+
+  <!-- ✅ Script En Sonda -->
+  <script>
+    const postContainer = document.getElementById('posts');
+
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const username = document.getElementById('regUsername').value;
+      const password = document.getElementById('regPassword').value;
+
+      fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => {
+        if (res.ok) {
+          alert("Kayıt başarılı!");
+          document.getElementById('registerForm').reset();
+          loadUsers(); 
+        } else {
+          alert("Kayıt başarısız.");
+        }
+      })
+      .catch(err => {
+        alert("Sunucu hatası.");
+        console.error(err);
+      });
+    });
+
+    document.getElementById('postForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const title = document.getElementById('title').value;
+      const content = document.getElementById('content').value;
+
+      fetch('/api/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content })
+      })
+      .then(res => {
+        if (res.ok) {
+          loadPosts();
+          document.getElementById('postForm').reset();
+        } else {
+          alert('Post eklenemedi.');
+        }
+      })
+      .catch(err => {
+        alert('Sunucu hatası.');
+        console.error(err);
+      });
+    });
+
+    function loadPosts() {
+      fetch('/api/posts')
+        .then(res => res.json())
+        .then(data => {
+          postContainer.innerHTML = '';
+          data.forEach(post => {
+            const div = document.createElement('div');
+            div.className = 'post';
+            div.innerHTML = `
+              <h3>${post.title}</h3>
+              <p>${post.content}</p>
+              <small><em>${new Date(post.created_at).toLocaleString()}</em></small>
+            `;
+            postContainer.appendChild(div);
+          });
+        })
+        .catch(err => {
+          postContainer.innerHTML = '<p>Postlar yüklenemedi.</p>';
+          console.error(err);
+        });
+    }
+
+    function loadUsers() {
+      fetch('/api/users')
+        .then(res => res.json())
+        .then(data => {
+          const ul = document.getElementById('users');
+          ul.innerHTML = '';
+          data.forEach(username => {
+            const li = document.createElement('li');
+            li.textContent = username;
+            ul.appendChild(li);
+          });
+        })
+        .catch(err => {
+          console.error("Kullanıcılar yüklenemedi:", err);
+        });
+    }
+
+    loadPosts();
+    loadUsers();
+  </script>
+</body>
+</html>
