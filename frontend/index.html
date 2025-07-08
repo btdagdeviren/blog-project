@@ -66,14 +66,14 @@
 
   <!-- ✅ Script En Sonda -->
   <script>
-    const postContainer = document.getElementById('posts');
+      const BASE_URL = 'http://localhost:31853/api';
 
     document.getElementById('registerForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const username = document.getElementById('regUsername').value;
       const password = document.getElementById('regPassword').value;
 
-      fetch('/api/register', {
+      fetch(`${BASE_URL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -98,7 +98,7 @@
       const title = document.getElementById('title').value;
       const content = document.getElementById('content').value;
 
-      fetch('/api/posts', {
+      fetch(`${BASE_URL}/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, content })
@@ -118,9 +118,10 @@
     });
 
     function loadPosts() {
-      fetch('/api/posts')
+      fetch(`${BASE_URL}/posts`)
         .then(res => res.json())
         .then(data => {
+          const postContainer = document.getElementById('posts');
           postContainer.innerHTML = '';
           data.forEach(post => {
             const div = document.createElement('div');
@@ -134,13 +135,13 @@
           });
         })
         .catch(err => {
-          postContainer.innerHTML = '<p>Postlar yüklenemedi.</p>';
+          document.getElementById('posts').innerHTML = '<p>Postlar yüklenemedi.</p>';
           console.error(err);
         });
     }
 
     function loadUsers() {
-      fetch('/api/users')
+      fetch(`${BASE_URL}/users`)
         .then(res => res.json())
         .then(data => {
           const ul = document.getElementById('users');
