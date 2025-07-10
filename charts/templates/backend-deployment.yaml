@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.backend.name }}
+  labels:
+    app: {{ .Values.backend.name }}
+spec:
+  replicas: {{ .Values.backend.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.backend.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.backend.name }}
+    spec:
+      containers:
+        - name: {{ .Values.backend.name }}
+          image: "{{ .Values.backend.deployment.image.repository }}:{{ .Values.backend.deployment.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.backend.deployment.containerPort }}
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.backend.env.POSTGRES_DB }}
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.backend.env.configMap.name }}
+                  key: {{ .Values.backend.env.configMap.DB_HOST_KEY }}
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.backend.env.configMap.name }}
+                  key: {{ .Values.backend.env.configMap.DB_NAME_KEY }}
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backend.env.secret.name }}
+                  key: {{ .Values.backend.env.secret.DB_USER_KEY }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backend.env.secret.name }}
+                  key: {{ .Values.backend.env.secret.DB_PASSWORD_KEY }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.backend.deployment.readinessProbe.path }}
+              port: {{ .Values.backend.deployment.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.backend.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.deployment.readinessProbe.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.backend.deployment.livenessProbe.path }}
+              port: {{ .Values.backend.deployment.livenessProbe.port }}
+            initialDelaySeconds: {{ .Values.backend.deployment.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.deployment.livenessProbe.periodSeconds }}
