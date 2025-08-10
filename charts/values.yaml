@@ -39,7 +39,6 @@ backend:
 postgres:
   name: postgres
   deployment:
-    replicaCount: 1
     image:
       repository: postgres
       tag: "15"
